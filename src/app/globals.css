@@ -42,4 +42,23 @@ button, [role="button"], a.btn {
   border-radius: var(--radius-card);
   box-shadow: 0 4px 16px rgba(244, 114, 182, 0.18);
   border: 1px solid #fbcfe8;
+  position: relative;
+}
+
+/* dekorasi scrapbook lembut */
+.scrapbook-card::before {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border-radius: calc(var(--radius-card) - 6px);
+  border: 1px dashed rgba(244, 114, 182, 0.25);
+  pointer-events: none;
+}
+
+.fade-in-paragraph {
+  animation: fadeParagraph 0.8s ease both;
+}
+@keyframes fadeParagraph {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
 }

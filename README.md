@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# HER DAY ARCADE 💗
 
-## Getting Started
+Virtual birthday game experience untuk dua pemain — **Birthday Player** bermain 6 game, **Game Host** mengendalikan sesi & mengelola konten. Mobile-first, realtime, skor dihitung server.
 
-First, run the development server:
+## Stack
+
+- Next.js 15 (App Router) + TypeScript strict + Tailwind CSS
+- Supabase (Postgres + Storage) — semua akses lewat server (service role), RLS deny-by-default
+- Zod (validasi), Vitest (unit/integration), Playwright (E2E — siap dikonfigurasi)
+
+## Menjalankan Lokal
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+cp .env.example .env   # isi SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SESSION_SECRET
+set -a && . ./.env && set +a
+# jalankan migrasi & seed (SQL editor Supabase atau CLI):
+npx supabase db query --project-ref <ref> --file supabase/migrations/0001_init.sql
+npx supabase db query --project-ref <ref> --file supabase/seed-demo.sql
+npm run build && npm start     # atau: npx next dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Test: `npm run test` (unit+integration), `npm run typecheck`, `npm run build`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Alur Bermain
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Host buka `/create` → dapat kode room 6 karakter + passcode pemulihan
+2. Player buka `/join` → masukkan kode + nama
+3. Lobby sinkron realtime → host tekan **Mulai**
+4. Player mainkan 6 game dari `/player` (maks 100 poin/game, 600 total)
+5. Reward terbuka otomatis per game di `/rewards`
+6. **Final Letter** terbuka setelah keenam game selesai → `/final-letter`
 
-## Learn More
+Host: `/host` (mulai/jeda/urutan/monitor/reset) dan `/editor` (kelola semua konten).
 
-To learn more about Next.js, take a look at the following resources:
+## Keamanan
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Token host/player: CSPRNG 256-bit, disimpan sebagai SHA-256 hash, cookie httpOnly+Secure+SameSite=Lax
+- Semua skor & kunci jawaban di server; kunci jawaban tidak pernah dikirim ke client
+- Anti-cheat: idempotency key + UNIQUE ledger, Catch My Heart direplay server dari input log (log mustahil → 0)
+- Rate limit create/join; pesan error generik (tidak membocorkan keberadaan kode)
+- Hasil uji manipulasi: endpoint skor palsu 404, submit dengan field ekstra 400, aksi host via player 403, kode invalid 404, token palsu 401
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Deployment (Vercel + Supabase)
 
-## Deploy on Vercel
+1. Supabase: buat bucket storage `media` (private)
+2. Push migrasi & seed (lihat atas)
+3. Vercel: import repo, set env: `APP_BASE_URL`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SESSION_SECRET`, `STORAGE_BUCKET=media`, `MAX_UPLOAD_MB=10`
+4. Deploy. Tidak ada deploy otomatis dari repo ini.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Checklist Konten Personal (diisi Host via /editor)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [ ] 10 soal Love Quiz + respons personal
+- [ ] 5 level Escape Room (kode, foto, lagu, pesan, password) + hint
+- [ ] 5 foto Memory Lane + jawaban & pesan
+- [ ] 9 isi Mystery Box
+- [ ] 5 ronde lagu (upload audio via editor API)
+- [ ] Parameter Catch My Heart (config games)
+- [ ] Teks 5 reward + Final Letter
+- [ ] Ganti konten demo → production (content_set kind='production'), uji satu putaran penuh berdua sebelum hari-H
