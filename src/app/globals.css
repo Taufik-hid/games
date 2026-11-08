@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+/* HER DAY ARCADE design tokens — pastel pink romantic cute */
+:root {
+  --color-bg: #fff5f7;          /* cream pink */
+  --color-surface: #ffffff;
+  --color-primary: #f472b6;     /* pastel pink */
+  --color-primary-dark: #ec4899;
+  --color-accent: #a16207;      /* warm gold */
+  --color-text: #4c2a3d;        /* deep rose brown */
+  --color-muted: #b08a9b;
+  --color-success: #22c55e;
+  --color-danger: #ef4444;
+  --radius-card: 1.25rem;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-geist-sans), ui-rounded, system-ui, sans-serif;
+  min-height: 100dvh;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: contain;
+}
+
+/* touch targets >= 44px */
+button, [role="button"], a.btn {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+.scrapbook-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-card);
+  box-shadow: 0 4px 16px rgba(244, 114, 182, 0.18);
+  border: 1px solid #fbcfe8;
+}
