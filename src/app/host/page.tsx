@@ -75,6 +75,7 @@ export default function HostDashboard() {
         {state.room.status === "lobby" && (
           <Button disabled={busy} onClick={() => act("start")}>▶️ Mulai</Button>
         )}
+        <Button variant="secondary" disabled={busy} onClick={() => (window.location.href = "/editor")}>✏️ Editor</Button>
         <Button variant="danger" disabled={busy} onClick={() => setConfirmReset(true)}>♻️ Reset</Button>
       </div>
 
