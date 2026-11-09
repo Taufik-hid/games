@@ -17,6 +17,12 @@ export default function LobbyPage() {
   const hostMember = state.members.find((m) => m.role === "host");
   const playerMember = state.members.find((m) => m.role === "player");
 
+  // Sesi sudah dimulai (mis. host mulai dari HP lain / halaman ini basi) → langsung ke dashboard masing-masing
+  if (state.room.status !== "lobby") {
+    window.location.replace(isHost ? "/host" : "/player");
+    return <Loader />;
+  }
+
   async function start() {
     setStarting(true);
     await fetch("/api/host/action", {
