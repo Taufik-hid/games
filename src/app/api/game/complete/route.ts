@@ -36,6 +36,19 @@ export async function POST(req: NextRequest) {
     const { data: ledger } = await db.from("points_ledger").select("points").eq("room_id", roomId).eq("game_id", game.id);
     const score = Math.min(100, (ledger ?? []).reduce((a, r) => a + r.points, 0));
     await db.from("game_sessions").update({ status: "completed", completed_at: new Date().toISOString(), score }).eq("id", session.id);
+
+    // buka game berikutnya sesuai urutan room (sekuensial)
+    const { data: roomRowFull } = await db.from("rooms").select("game_order").eq("id", roomId).single();
+    const order: string[] = roomRowFull?.game_order ?? [];
+    const idx = order.indexOf(gameSlug);
+    const nextSlug = idx >= 0 ? order[idx + 1] : undefined;
+    if (nextSlug) {
+      const { data: nextGame } = await db.from("games").select("id").eq("content_set_id", room.content_set_id).eq("slug", nextSlug).single();
+      const { data: nextSession } = await db.from("game_sessions").select("id").eq("room_id", roomId).eq("game_id", nextGame!.id).single();
+      if (nextSession && nextSession.id) {
+        await db.from("game_sessions").update({ status: "available" }).eq("id", nextSession.id);
+      }
+    }
   }
   await unlockRewardsForCompletedGame(roomId, gameSlug);
   const { data: roomRow } = await db.from("rooms").select("version").eq("id", roomId).single();
